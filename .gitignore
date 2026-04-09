@@ -1,0 +1,21 @@
+# Dev / AI tooling
+CLAUDE.md
+Implementation_manual.md
+start.bat
+
+# Node / Nuxt
+client/node_modules/
+client/.nuxt/
+client/.output/
+client/.data/
+client/.env
+client/.env.*
+client/dist/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
