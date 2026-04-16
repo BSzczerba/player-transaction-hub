@@ -14,7 +14,8 @@ export default defineNuxtPlugin(() => {
       }
     },
     onResponseError({ response }) {
-      if (response.status === 401) {
+      // Only auto-logout on 401 if we had a token (authenticated request rejected)
+      if (response.status === 401 && auth.token) {
         auth.logout()
         navigateTo('/login')
       }
