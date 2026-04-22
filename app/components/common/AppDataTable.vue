@@ -44,7 +44,7 @@ const skeletonRows = 5
         <tbody>
           <!-- Skeleton rows -->
           <template v-if="loading">
-            <AppSkeletonRow
+            <CommonAppSkeletonRow
               v-for="i in skeletonRows"
               :key="i"
               :columns="columns"
@@ -82,7 +82,7 @@ const skeletonRows = 5
       </table>
     </div>
 
-    <AppPagination
+    <CommonAppPagination
       v-if="pagination"
       :pagination="pagination"
       @page-change="emit('page-change', $event)"

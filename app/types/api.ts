@@ -127,10 +127,11 @@ export interface CreateWithdrawalDto {
 export interface TransactionFilterDto {
   page?: number
   pageSize?: number
+  playerId?: string
   type?: 'Deposit' | 'Withdrawal'
   status?: string
-  dateFrom?: string
-  dateTo?: string
+  startDate?: string
+  endDate?: string
   minAmount?: number
   maxAmount?: number
   isFlagged?: boolean
