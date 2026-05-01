@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { TransactionDto } from '~/types/api'
+import type { TransactionDto, TransactionFilterDto } from '~/types/api'
 
 definePageMeta({ middleware: ['auth'] })
 
@@ -11,14 +11,15 @@ const router = useRouter()
 
 const loading = ref(true)
 const loadError = ref('')
-
-const isPlayer = computed(() => auth.user?.role === 'Player')
+const sortBy = ref('createdAt')
+const sortDir = ref<'asc' | 'desc'>('desc')
+const activeFilters = ref<TransactionFilterDto>({})
 
 const columns = [
-  { key: 'createdAt', label: 'Date', width: '150px' },
-  { key: 'type', label: 'Type', width: '110px' },
-  { key: 'amount', label: 'Amount', width: '130px' },
-  { key: 'status', label: 'Status', width: '130px' },
+  { key: 'createdAt', label: 'Date', width: '150px', sortable: true },
+  { key: 'type', label: 'Type', width: '110px', sortable: true },
+  { key: 'amount', label: 'Amount', width: '130px', sortable: true },
+  { key: 'status', label: 'Status', width: '130px', sortable: true },
   { key: 'paymentMethodName', label: 'Method' },
   { key: 'paymentGatewayReference', label: 'Gateway Ref', width: '160px' },
   { key: 'isFlagged', label: 'Flag', width: '60px' },
@@ -28,13 +29,24 @@ async function load(page = 1) {
   loading.value = true
   loadError.value = ''
   try {
-    await txStore.fetchMy(page)
+    await txStore.fetchMy(page, 20, sortBy.value, sortDir.value, activeFilters.value)
   } catch (err) {
     loadError.value = 'Failed to load transactions.'
     console.error('[transactions/index] fetchMy error:', err)
   } finally {
     loading.value = false
   }
+}
+
+function handleSortChange({ sortBy: by, sortDir: dir }: { sortBy: string; sortDir: 'asc' | 'desc' }) {
+  sortBy.value = by
+  sortDir.value = dir
+  load(1)
+}
+
+function handleFilterChange(filters: TransactionFilterDto) {
+  activeFilters.value = filters
+  load(1)
 }
 
 onMounted(() => load())
@@ -50,6 +62,8 @@ const rows = computed(() => txStore.myTransactions?.items ?? [])
   <div class="space-y-4">
     <h1 class="text-xl font-semibold text-slate-800">My Transactions</h1>
 
+    <TransactionsTransactionFilters @change="handleFilterChange" />
+
     <p v-if="loadError" class="text-red-500 text-sm">{{ loadError }}</p>
 
     <CommonAppDataTable
@@ -57,8 +71,11 @@ const rows = computed(() => txStore.myTransactions?.items ?? [])
       :rows="(rows as Record<string, unknown>[])"
       :loading="loading"
       :pagination="txStore.myTransactions"
+      :sort-by="sortBy"
+      :sort-dir="sortDir"
       :on-row-click="goToDetail"
       @page-change="load"
+      @sort-change="handleSortChange"
     >
       <template #cell-createdAt="{ value }">
         <span class="text-slate-500 text-xs">{{ fromNow(value as string) }}</span>

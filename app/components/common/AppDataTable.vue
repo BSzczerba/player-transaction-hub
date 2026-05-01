@@ -5,6 +5,7 @@ interface Column {
   key: string
   label: string
   width?: string
+  sortable?: boolean
 }
 
 interface Props {
@@ -13,14 +14,27 @@ interface Props {
   loading?: boolean
   pagination?: PagedResult<unknown> | null
   onRowClick?: (row: Record<string, unknown>) => void
+  sortBy?: string
+  sortDir?: 'asc' | 'desc'
 }
 
 const props = withDefaults(defineProps<Props>(), {
   loading: false,
   pagination: null,
+  sortBy: '',
+  sortDir: 'desc',
 })
 
-const emit = defineEmits<{ 'page-change': [number] }>()
+const emit = defineEmits<{
+  'page-change': [number]
+  'sort-change': [{ sortBy: string; sortDir: 'asc' | 'desc' }]
+}>()
+
+function handleSort(col: Column) {
+  if (!col.sortable) return
+  const newDir = props.sortBy === col.key && props.sortDir === 'desc' ? 'asc' : 'desc'
+  emit('sort-change', { sortBy: col.key, sortDir: newDir })
+}
 
 const skeletonRows = 5
 </script>
@@ -35,9 +49,17 @@ const skeletonRows = 5
               v-for="col in columns"
               :key="col.key"
               class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500"
+              :class="{ 'cursor-pointer select-none hover:text-slate-700': col.sortable }"
               :style="col.width ? { width: col.width } : {}"
+              @click="handleSort(col)"
             >
-              {{ col.label }}
+              <span class="inline-flex items-center gap-1">
+                {{ col.label }}
+                <span v-if="col.sortable" class="inline-flex flex-col leading-none text-[10px]">
+                  <span :class="sortBy === col.key && sortDir === 'asc' ? 'text-slate-800' : 'text-slate-300'">▲</span>
+                  <span :class="sortBy === col.key && sortDir === 'desc' ? 'text-slate-800' : 'text-slate-300'">▼</span>
+                </span>
+              </span>
             </th>
           </tr>
         </thead>

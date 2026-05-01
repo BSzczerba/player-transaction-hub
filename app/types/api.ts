@@ -128,13 +128,15 @@ export interface TransactionFilterDto {
   page?: number
   pageSize?: number
   playerId?: string
-  type?: 'Deposit' | 'Withdrawal'
-  status?: string
+  type?: number        // 1 = Deposit, 2 = Withdrawal
+  status?: number      // 1 Pending, 2 Processing, 3 Completed, 4 Failed, 5 Cancelled, 6 Rejected
   startDate?: string
   endDate?: string
   minAmount?: number
   maxAmount?: number
   isFlagged?: boolean
+  sortBy?: string
+  sortDir?: 'asc' | 'desc'
 }
 
 // ── Admin / compliance DTOs ────────────────────────────────────────────────

@@ -3,26 +3,44 @@ import type { TransactionFilterDto } from '~/types/api'
 
 const emit = defineEmits<{ change: [TransactionFilterDto] }>()
 
-const type = ref<'' | 'Deposit' | 'Withdrawal'>('')
-const status = ref('')
+const type = ref<number | ''>('')
+const status = ref<number | ''>('')
 const startDate = ref('')
 const endDate = ref('')
 const minAmount = ref<number | null>(null)
 const maxAmount = ref<number | null>(null)
 const isFlagged = ref(false)
 
-const statusOptions = ['', 'Pending', 'Processing', 'Completed', 'Failed', 'Cancelled', 'Rejected']
+const typeOptions = [
+  { label: 'All types', value: '' },
+  { label: 'Deposit', value: 1 },
+  { label: 'Withdrawal', value: 2 },
+]
+
+const statusOptions = [
+  { label: 'All statuses', value: '' },
+  { label: 'Pending', value: 1 },
+  { label: 'Processing', value: 2 },
+  { label: 'Completed', value: 3 },
+  { label: 'Failed', value: 4 },
+  { label: 'Cancelled', value: 5 },
+  { label: 'Rejected', value: 6 },
+]
+
+function build(): TransactionFilterDto {
+  const f: TransactionFilterDto = { page: 1, pageSize: 20 }
+  if (type.value !== '') f.type = type.value as number
+  if (status.value !== '') f.status = status.value as number
+  if (startDate.value) f.startDate = `${startDate.value}T00:00:00Z`
+  if (endDate.value) f.endDate = `${endDate.value}T23:59:59Z`
+  if (minAmount.value != null && minAmount.value > 0) f.minAmount = minAmount.value
+  if (maxAmount.value != null && maxAmount.value > 0) f.maxAmount = maxAmount.value
+  if (isFlagged.value) f.isFlagged = true
+  return f
+}
 
 function apply() {
-  const filters: TransactionFilterDto = { page: 1, pageSize: 20 }
-  if (type.value) filters.type = type.value
-  if (status.value) filters.status = status.value
-  if (startDate.value) filters.startDate = startDate.value
-  if (endDate.value) filters.endDate = endDate.value
-  if (minAmount.value != null && minAmount.value > 0) filters.minAmount = minAmount.value
-  if (maxAmount.value != null && maxAmount.value > 0) filters.maxAmount = maxAmount.value
-  if (isFlagged.value) filters.isFlagged = true
-  emit('change', filters)
+  emit('change', build())
 }
 
 function reset() {
@@ -47,9 +65,7 @@ function reset() {
           v-model="type"
           class="border border-slate-300 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
         >
-          <option value="">All types</option>
-          <option value="Deposit">Deposit</option>
-          <option value="Withdrawal">Withdrawal</option>
+          <option v-for="o in typeOptions" :key="String(o.value)" :value="o.value">{{ o.label }}</option>
         </select>
       </div>
 
@@ -60,8 +76,7 @@ function reset() {
           v-model="status"
           class="border border-slate-300 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
         >
-          <option value="">All statuses</option>
-          <option v-for="s in statusOptions.slice(1)" :key="s" :value="s">{{ s }}</option>
+          <option v-for="o in statusOptions" :key="String(o.value)" :value="o.value">{{ o.label }}</option>
         </select>
       </div>
 
@@ -85,28 +100,31 @@ function reset() {
         />
       </div>
 
-      <!-- Amount range -->
+      <!-- Min amount -->
       <div class="flex flex-col gap-1">
         <label class="text-xs font-medium text-slate-500">Min $</label>
         <input
           v-model.number="minAmount"
           type="number"
+          min="0"
           placeholder="0"
           class="w-24 border border-slate-300 rounded-lg px-2 py-1.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-sky-500"
         />
       </div>
 
+      <!-- Max amount -->
       <div class="flex flex-col gap-1">
         <label class="text-xs font-medium text-slate-500">Max $</label>
         <input
           v-model.number="maxAmount"
           type="number"
+          min="0"
           placeholder="∞"
           class="w-24 border border-slate-300 rounded-lg px-2 py-1.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-sky-500"
         />
       </div>
 
-      <!-- Flagged toggle -->
+      <!-- Flagged -->
       <div class="flex flex-col gap-1 justify-end">
         <label class="flex items-center gap-2 cursor-pointer text-sm text-slate-600 pb-1.5">
           <input v-model="isFlagged" type="checkbox" class="rounded" />

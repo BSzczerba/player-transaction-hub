@@ -16,11 +16,12 @@ export const useTransactionStore = defineStore('transactions', {
   }),
 
   actions: {
-    async fetchMy(page = 1, pageSize = 20): Promise<void> {
+    async fetchMy(page = 1, pageSize = 20, sortBy = 'createdAt', sortDir: 'asc' | 'desc' = 'desc', filters: TransactionFilterDto = {}): Promise<void> {
       const { $api } = useNuxtApp()
+      const { page: _p, pageSize: _ps, sortBy: _sb, sortDir: _sd, ...rest } = filters
       this.myTransactions = await ($api as ReturnType<typeof $fetch.create>)<PagedResult<TransactionDto>>(
         '/api/Transactions/my',
-        { query: { page, pageSize } }
+        { query: { page, pageSize, sortBy, sortDir, ...rest } }
       )
     },
 
