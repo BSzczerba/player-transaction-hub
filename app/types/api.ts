@@ -160,11 +160,16 @@ export interface ComplianceSummaryDto {
 }
 
 export interface RiskProfileDto {
-  player: PlayerDto
+  playerId: string
+  username: string
+  status: string
+  kycVerified: boolean
   totalTransactions: number
   flaggedTransactions: number
   totalDeposited: number
   totalWithdrawn: number
+  currentBalance: number
+  accountCreated: string
   recentFlaggedTransactions: TransactionDto[]
 }
 
