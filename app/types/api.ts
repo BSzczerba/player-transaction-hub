@@ -174,15 +174,19 @@ export interface RiskProfileDto {
 }
 
 export interface FinancialSummaryDto {
+  periodStart: string
+  periodEnd: string
   totalDeposits: number
   totalWithdrawals: number
   netFlow: number
-  avgTransaction: number
-  completedCount: number
-  pendingCount: number
-  rejectedCount: number
-  flaggedCount: number
-  breakdown: { date: string; deposits: number; withdrawals: number }[]
+  totalTransactions: number
+  completedTransactions: number
+  pendingTransactions: number
+  processingTransactions: number
+  rejectedTransactions: number
+  flaggedTransactions: number
+  averageTransactionAmount: number
+  breakdown: { period: string; deposits: number; withdrawals: number; transactionCount: number; flaggedCount: number }[]
 }
 
 export interface AuditLogDto {
@@ -194,4 +198,41 @@ export interface AuditLogDto {
   oldValue?: string
   newValue?: string
   createdAt: string
+}
+
+// ── Reports DTOs ──────────────────────────────────────────────────────────────
+
+export interface TopPlayerDto {
+  playerId: string
+  username: string
+  totalVolume: number
+  transactionCount: number
+  currentBalance: number
+}
+
+export interface PlayerActivityReportDto {
+  totalPlayers: number
+  activePlayers: number
+  suspendedPlayers: number
+  closedPlayers: number
+  kycVerifiedPlayers: number
+  newPlayersInPeriod: number
+  topPlayersByVolume: TopPlayerDto[]
+}
+
+export interface PaymentMethodStatsDto {
+  paymentMethodId: string
+  name: string
+  type: string
+  transactionCount: number
+  totalVolume: number
+  averageAmount: number
+}
+
+export interface PaymentMethodReportDto {
+  paymentMethods: PaymentMethodStatsDto[]
+  mostUsedByCount: string
+  highestVolumeMethod: string
+  totalTransactions: number
+  totalVolume: number
 }

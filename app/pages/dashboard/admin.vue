@@ -45,26 +45,26 @@ onMounted(load)
         :value="formatUSD(summary.netFlow)"
         :subtext="summary.netFlow >= 0 ? 'Positive' : 'Negative'"
       />
-      <CommonAppStatCard label="Avg Transaction" :value="formatUSD(summary.avgTransaction)" />
+      <CommonAppStatCard label="Avg Transaction" :value="formatUSD(summary.averageTransactionAmount)" />
     </div>
 
     <!-- Status summary row -->
     <div v-if="summary" class="grid grid-cols-2 sm:grid-cols-4 gap-4">
       <div class="bg-white rounded-xl border border-slate-200 p-4 text-center">
         <p class="text-xs text-slate-500 uppercase tracking-wide mb-1">Completed</p>
-        <p class="text-xl font-semibold font-mono text-green-600">{{ summary.completedCount }}</p>
+        <p class="text-xl font-semibold font-mono text-green-600">{{ summary.completedTransactions }}</p>
       </div>
       <div class="bg-white rounded-xl border border-slate-200 p-4 text-center">
         <p class="text-xs text-slate-500 uppercase tracking-wide mb-1">Pending</p>
-        <p class="text-xl font-semibold font-mono text-amber-600">{{ summary.pendingCount }}</p>
+        <p class="text-xl font-semibold font-mono text-amber-600">{{ summary.pendingTransactions }}</p>
       </div>
       <div class="bg-white rounded-xl border border-slate-200 p-4 text-center">
         <p class="text-xs text-slate-500 uppercase tracking-wide mb-1">Rejected</p>
-        <p class="text-xl font-semibold font-mono text-red-600">{{ summary.rejectedCount }}</p>
+        <p class="text-xl font-semibold font-mono text-red-600">{{ summary.rejectedTransactions }}</p>
       </div>
       <div class="bg-white rounded-xl border border-slate-200 p-4 text-center">
         <p class="text-xs text-slate-500 uppercase tracking-wide mb-1">Flagged</p>
-        <p class="text-xl font-semibold font-mono text-orange-600">{{ summary.flaggedCount }}</p>
+        <p class="text-xl font-semibold font-mono text-orange-600">{{ summary.flaggedTransactions }}</p>
       </div>
     </div>
 
