@@ -43,7 +43,7 @@ const pendingCount = computed(() =>
 )
 
 function goToDetail(row: Record<string, unknown>) {
-  router.push(`/transactions/${row.id}`)
+  navigateTo(`/transactions/${row.id}`)
 }
 </script>
 
@@ -74,9 +74,9 @@ function goToDetail(row: Record<string, unknown>) {
     <!-- Stat cards -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       <CommonAppStatCard label="Current Balance" :value="formatUSD(auth.user?.balance ?? 0)" icon="💰" />
-      <CommonAppStatCard label="Total Deposited" :value="formatUSD(totalDeposited)" icon="↓" />
-      <CommonAppStatCard label="Total Withdrawn" :value="formatUSD(totalWithdrawn)" icon="↑" />
-      <CommonAppStatCard label="Pending Transactions" :value="String(pendingCount)" icon="⏳" />
+      <CommonAppStatCard label="Recent Deposits (last 5)" :value="formatUSD(totalDeposited)" icon="↓" />
+      <CommonAppStatCard label="Recent Withdrawals (last 5)" :value="formatUSD(totalWithdrawn)" icon="↑" />
+      <CommonAppStatCard label="Pending (last 5)" :value="String(pendingCount)" icon="⏳" />
     </div>
 
     <!-- Recent transactions -->

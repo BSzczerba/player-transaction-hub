@@ -3,7 +3,7 @@ import type { FinancialSummaryDto } from '~/types/api'
 
 definePageMeta({ middleware: ['auth', 'role'], roles: ['Administrator'] })
 
-const { $api } = useNuxtApp()
+const api = useApi()
 const txStore = useTransactionStore()
 const { formatUSD } = useCurrency()
 const { fromNow } = useRelativeTime()
@@ -17,7 +17,7 @@ async function load() {
   loading.value = true
   try {
     const [s] = await Promise.all([
-      ($api as ReturnType<typeof $fetch.create>)<FinancialSummaryDto>('/api/Reports/financial-summary'),
+      api<FinancialSummaryDto>('/api/Reports/financial-summary'),
       txStore.fetchFlagged(1, 5),
     ])
     summary.value = s

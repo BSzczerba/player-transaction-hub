@@ -33,8 +33,8 @@ async function submit() {
   loading.value = true
   error.value = ''
   try {
-    const { $api } = useNuxtApp()
-    await ($api as ReturnType<typeof $fetch.create>)<void>(
+    const api = useApi()
+    await api<void>(
       `/api/Compliance/flagged/${props.transactionId}/clear`,
       { method: 'POST', body: { notes: notes.value.trim() } }
     )

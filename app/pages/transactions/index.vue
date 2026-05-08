@@ -15,6 +15,8 @@ const sortBy = ref('createdAt')
 const sortDir = ref<'asc' | 'desc'>('desc')
 const activeFilters = ref<TransactionFilterDto>({})
 
+const isPlayer = computed(() => auth.user?.role === 'Player')
+
 const columns = [
   { key: 'createdAt', label: 'Date', width: '150px', sortable: true },
   { key: 'type', label: 'Type', width: '110px', sortable: true },
@@ -29,10 +31,13 @@ async function load(page = 1) {
   loading.value = true
   loadError.value = ''
   try {
-    await txStore.fetchMy(page, 20, sortBy.value, sortDir.value, activeFilters.value)
-  } catch (err) {
+    if (isPlayer.value) {
+      await txStore.fetchMy(page, 20, sortBy.value, sortDir.value, activeFilters.value)
+    } else {
+      await txStore.fetchAll({ ...activeFilters.value, page, pageSize: 20, sortBy: sortBy.value, sortDir: sortDir.value })
+    }
+  } catch {
     loadError.value = 'Failed to load transactions.'
-    console.error('[transactions/index] fetchMy error:', err)
   } finally {
     loading.value = false
   }
@@ -52,10 +57,18 @@ function handleFilterChange(filters: TransactionFilterDto) {
 onMounted(() => load())
 
 function goToDetail(row: Record<string, unknown>) {
-  router.push(`/transactions/${row.id}`)
+  navigateTo(`/transactions/${row.id}`)
 }
 
-const rows = computed(() => txStore.myTransactions?.items ?? [])
+const rows = computed(() =>
+  isPlayer.value
+    ? (txStore.myTransactions?.items ?? [])
+    : (txStore.allTransactions?.items ?? [])
+)
+
+const pagination = computed(() =>
+  isPlayer.value ? txStore.myTransactions : txStore.allTransactions
+)
 </script>
 
 <template>
@@ -70,7 +83,7 @@ const rows = computed(() => txStore.myTransactions?.items ?? [])
       :columns="columns"
       :rows="(rows as Record<string, unknown>[])"
       :loading="loading"
-      :pagination="txStore.myTransactions"
+      :pagination="pagination"
       :sort-by="sortBy"
       :sort-dir="sortDir"
       :on-row-click="goToDetail"

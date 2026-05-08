@@ -1,16 +1,23 @@
+declare module '#app' {
+  interface NuxtApp {
+    $api: typeof $fetch
+  }
+}
+
 export default defineNuxtPlugin(() => {
   const auth = useAuthStore()
   const ui = useUiStore()
+  const config = useRuntimeConfig()
 
   const api = $fetch.create({
-    baseURL: 'http://localhost:5235',
-    onRequest({ options }) {
+    baseURL: config.public.apiBase,
+    async onRequest({ options }) {
+      if (auth.token && auth.isTokenExpiringSoon) {
+        await auth.refresh()
+      }
       if (auth.token) {
         options.headers = new Headers(options.headers as HeadersInit)
         ;(options.headers as Headers).set('Authorization', `Bearer ${auth.token}`)
-      }
-      if (auth.isTokenExpiringSoon) {
-        auth.refresh()
       }
     },
     onResponseError({ response }) {

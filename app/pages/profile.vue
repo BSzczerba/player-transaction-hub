@@ -49,10 +49,18 @@ const onSubmit = handleSubmit(async (values) => {
   saveSuccess.value = false
   saveError.value = ''
   try {
-    const { $api } = useNuxtApp()
-    const updated = await ($api as ReturnType<typeof $fetch.create>)<PlayerDto>(
+    const api = useApi()
+    const updated = await api<PlayerDto>(
       '/api/players/me',
-      { method: 'PUT', body: values }
+      {
+        method: 'PUT',
+        body: {
+          firstName: values.firstName,
+          lastName: values.lastName,
+          phoneNumber: values.phoneNumber || null,
+          dateOfBirth: values.dateOfBirth || null,
+        },
+      }
     )
     auth.user = updated
     saveSuccess.value = true

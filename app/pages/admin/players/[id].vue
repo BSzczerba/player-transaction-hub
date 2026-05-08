@@ -7,7 +7,7 @@ definePageMeta({ middleware: ['auth', 'role'], roles: ['Administrator'] })
 const route = useRoute()
 const id = route.params.id as string
 
-const { $api } = useNuxtApp()
+const api = useApi()
 const playerStore = usePlayerStore()
 const txStore = useTransactionStore()
 const { formatUSD } = useCurrency()
@@ -30,7 +30,7 @@ const txLoading = ref(false)
 
 const player = computed(() => playerStore.selectedPlayer)
 const riskProfile = computed(() => playerStore.riskProfile)
-const txResult = computed(() => txStore.myTransactions)
+const txResult = computed(() => txStore.allTransactions)
 
 async function loadPlayer() {
   await playerStore.fetchById(id)
@@ -40,9 +40,7 @@ async function loadPlayer() {
 async function loadAuditLogs() {
   auditLoading.value = true
   try {
-    auditLogs.value = await ($api as ReturnType<typeof $fetch.create>)<AuditLogDto[]>(
-      `/api/Admin/players/${id}/audit-logs`
-    )
+    auditLogs.value = await api<AuditLogDto[]>(`/api/Admin/players/${id}/audit-logs`)
   } catch {
     auditLogs.value = []
   } finally {

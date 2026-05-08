@@ -3,7 +3,7 @@ import type { ComplianceSummaryDto } from '~/types/api'
 
 definePageMeta({ middleware: ['auth', 'role'], roles: ['ComplianceOfficer', 'Administrator'] })
 
-const { $api } = useNuxtApp()
+const api = useApi()
 const txStore = useTransactionStore()
 const { formatUSD } = useCurrency()
 const { fromNow } = useRelativeTime()
@@ -18,7 +18,7 @@ async function load() {
   loading.value = true
   try {
     const [s] = await Promise.all([
-      ($api as ReturnType<typeof $fetch.create>)<ComplianceSummaryDto>('/api/Compliance/summary'),
+      api<ComplianceSummaryDto>('/api/Compliance/summary'),
       txStore.fetchFlagged(1, 20),
     ])
     summary.value = s

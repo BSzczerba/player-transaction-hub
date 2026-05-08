@@ -2,7 +2,6 @@
 definePageMeta({ layout: 'auth' })
 
 const route = useRoute()
-const router = useRouter()
 
 const state = ref<'loading' | 'success' | 'error'>('loading')
 const errorMessage = ref('')
@@ -15,13 +14,10 @@ onMounted(async () => {
     return
   }
   try {
-    const { $api } = useNuxtApp()
-    await ($api as ReturnType<typeof $fetch.create>)('/api/auth/activate', {
-      method: 'POST',
-      body: { token },
-    })
+    const api = useApi()
+    await api('/api/auth/activate', { method: 'POST', body: { token } })
     state.value = 'success'
-    setTimeout(() => router.push('/login'), 2000)
+    setTimeout(() => navigateTo('/login'), 2000)
   } catch (err: unknown) {
     state.value = 'error'
     errorMessage.value =

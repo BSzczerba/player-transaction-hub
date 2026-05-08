@@ -5,9 +5,8 @@ definePageMeta({ middleware: ['auth', 'role'], roles: ['Player'] })
 
 const auth = useAuthStore()
 const txStore = useTransactionStore()
-const { $api } = useNuxtApp()
+const api = useApi()
 const { formatUSD } = useCurrency()
-const router = useRouter()
 
 const step = ref<1 | 2 | 3>(1)
 const paymentMethods = ref<PaymentMethodDto[]>([])
@@ -18,7 +17,7 @@ const submitting = ref(false)
 const submitError = ref('')
 
 onMounted(async () => {
-  paymentMethods.value = await ($api as ReturnType<typeof $fetch.create>)<PaymentMethodDto[]>('/api/PaymentMethods')
+  paymentMethods.value = await api<PaymentMethodDto[]>('/api/PaymentMethods')
 })
 
 function selectMethod(m: PaymentMethodDto) {
@@ -76,7 +75,7 @@ async function submit() {
       amount: amount.value!,
       paymentMethodId: selectedMethod.value!.id,
     })
-    router.push(`/transactions/${tx.id}`)
+    navigateTo(`/transactions/${tx.id}`)
   } catch (err: unknown) {
     submitError.value = (err as { data?: { message?: string } })?.data?.message ?? 'Withdrawal failed. Please try again.'
   } finally {

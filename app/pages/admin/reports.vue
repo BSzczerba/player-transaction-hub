@@ -3,7 +3,7 @@ import type { FinancialSummaryDto, PlayerActivityReportDto, PaymentMethodReportD
 
 definePageMeta({ middleware: ['auth', 'role'], roles: ['Administrator'] })
 
-const { $api } = useNuxtApp()
+const api = useApi()
 const { formatUSD } = useCurrency()
 
 // ── tabs ──────────────────────────────────────────────────────────────────────
@@ -23,7 +23,7 @@ const groupBy = ref<'Daily' | 'Weekly' | 'Monthly'>('Daily')
 async function loadSummary() {
   summaryLoading.value = true
   try {
-    summary.value = await ($api as ReturnType<typeof $fetch.create>)<FinancialSummaryDto>(
+    summary.value = await api<FinancialSummaryDto>(
       '/api/Reports/financial-summary',
       {
         query: {
@@ -47,9 +47,7 @@ const activityLoading = ref(false)
 async function loadActivity() {
   activityLoading.value = true
   try {
-    playerActivity.value = await ($api as ReturnType<typeof $fetch.create>)<PlayerActivityReportDto>(
-      '/api/Reports/players',
-    )
+    playerActivity.value = await api<PlayerActivityReportDto>('/api/Reports/players')
   } catch {
     playerActivity.value = null
   } finally {
@@ -64,9 +62,7 @@ const methodsLoading = ref(false)
 async function loadMethods() {
   methodsLoading.value = true
   try {
-    paymentReport.value = await ($api as ReturnType<typeof $fetch.create>)<PaymentMethodReportDto>(
-      '/api/Reports/payment-methods',
-    )
+    paymentReport.value = await api<PaymentMethodReportDto>('/api/Reports/payment-methods')
   } catch {
     paymentReport.value = null
   } finally {
@@ -81,7 +77,7 @@ const exportingPlayers = ref(false)
 async function exportTransactions() {
   exportingTx.value = true
   try {
-    const blob = await ($api as ReturnType<typeof $fetch.create>)<Blob>(
+    const blob = await api<Blob>(
       '/api/Reports/export/transactions',
       {
         responseType: 'blob',
@@ -100,10 +96,7 @@ async function exportTransactions() {
 async function exportPlayers() {
   exportingPlayers.value = true
   try {
-    const blob = await ($api as ReturnType<typeof $fetch.create>)<Blob>(
-      '/api/Reports/export/players',
-      { responseType: 'blob' },
-    )
+    const blob = await api<Blob>('/api/Reports/export/players', { responseType: 'blob' })
     triggerDownload(blob, 'players.csv')
   } finally {
     exportingPlayers.value = false

@@ -9,7 +9,7 @@ export const useAuthStore = defineStore('auth', {
   state: () => ({
     user: null as PlayerDto | null,
     token: null as string | null,
-    refreshToken: null as string | null,
+    refreshToken: null as string | null, // memory-only — never persisted to localStorage
     expiresAt: null as string | null,
   }),
 
@@ -23,22 +23,19 @@ export const useAuthStore = defineStore('auth', {
   actions: {
     _applyTokenData(data: TokenData) {
       this.token = data.token
-      this.refreshToken = data.refreshToken
+      this.refreshToken = data.refreshToken // kept in memory only
       this.expiresAt = data.expiresAt
       this.user = data.user
       if (import.meta.client) {
+        // refreshToken intentionally excluded — storing it in localStorage is an XSS risk
         localStorage.setItem('token', data.token)
-        localStorage.setItem('refreshToken', data.refreshToken)
         localStorage.setItem('expiresAt', data.expiresAt)
       }
     },
 
     async login(dto: LoginDto): Promise<void> {
-      const { $api } = useNuxtApp()
-      const data = await ($api as ReturnType<typeof $fetch.create>)<TokenData>(
-        '/api/auth/login',
-        { method: 'POST', body: dto }
-      )
+      const api = useApi()
+      const data = await api<TokenData>('/api/auth/login', { method: 'POST', body: dto })
       this._applyTokenData(data)
     },
 
@@ -50,21 +47,27 @@ export const useAuthStore = defineStore('auth', {
       refreshPromise = null
       if (import.meta.client) {
         localStorage.removeItem('token')
-        localStorage.removeItem('refreshToken')
         localStorage.removeItem('expiresAt')
       }
+      // Clear cross-store state to prevent data leakage between sessions
+      useTransactionStore().$reset()
+      usePlayerStore().$reset()
+      useNotificationStore().$reset()
     },
 
     async refresh(): Promise<void> {
       if (!this.token || !this.refreshToken) return
       // Return existing in-flight refresh to avoid parallel token exchanges
       if (refreshPromise) return refreshPromise
+      const config = useRuntimeConfig()
+      const tokenSnapshot = this.token
+      const refreshTokenSnapshot = this.refreshToken
       refreshPromise = (async () => {
         try {
-          const { $api } = useNuxtApp()
-          const data = await ($api as ReturnType<typeof $fetch.create>)<TokenData>(
-            '/api/auth/refresh',
-            { method: 'POST', body: { token: this.token, refreshToken: this.refreshToken } }
+          // Use raw $fetch (not $api) to bypass the interceptor and avoid a refresh loop
+          const data = await $fetch<TokenData>(
+            `${config.public.apiBase}/api/auth/refresh`,
+            { method: 'POST', body: { token: tokenSnapshot, refreshToken: refreshTokenSnapshot } }
           )
           this._applyTokenData(data)
         } catch {
@@ -79,19 +82,22 @@ export const useAuthStore = defineStore('auth', {
     async loadUser(): Promise<void> {
       if (import.meta.client) {
         const token = localStorage.getItem('token')
-        if (token) {
-          this.token = token
-          this.refreshToken = localStorage.getItem('refreshToken')
-          this.expiresAt = localStorage.getItem('expiresAt')
+        const expiresAt = localStorage.getItem('expiresAt')
+        if (!token || !expiresAt || new Date(expiresAt).getTime() < Date.now()) {
+          this.logout()
+          return
         }
+        this.token = token
+        this.expiresAt = expiresAt
+        // refreshToken is NOT read from localStorage — it was never stored there
       }
       if (!this.token) return
       try {
-        const { $api } = useNuxtApp()
-        this.user = await ($api as ReturnType<typeof $fetch.create>)<PlayerDto>('/api/auth/me')
-      } catch (err: unknown) {
-        // Only sign out on auth failure, not transient network errors
-        if ((err as { status?: number })?.status === 401) this.logout()
+        const api = useApi()
+        this.user = await api<PlayerDto>('/api/auth/me')
+      } catch {
+        // Any failure (401, network error, etc.) invalidates the session
+        this.logout()
       }
     },
   },

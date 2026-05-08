@@ -39,19 +39,18 @@ const { value: phoneNumber } = f<string>('phoneNumber')
 const { value: password, errorMessage: passwordError } = f<string>('password')
 const { value: confirmPassword, errorMessage: confirmPasswordError } = f<string>('confirmPassword')
 
-const router = useRouter()
 const globalError = ref('')
 
 const onSubmit = handleSubmit(async (values) => {
   globalError.value = ''
   try {
-    const { $api } = useNuxtApp()
-    const data = await ($api as ReturnType<typeof $fetch.create>)<{ activationToken?: string }>(
+    const api = useApi()
+    const data = await api<{ activationToken?: string }>(
       '/api/auth/register',
       { method: 'POST', body: values }
     )
     const token = data.activationToken
-    await router.push(token ? `/activate?token=${token}` : '/login')
+    await navigateTo(token ? `/activate?token=${token}` : '/login')
   } catch (err: unknown) {
     const status = (err as { status?: number })?.status
     if (status === 429) {

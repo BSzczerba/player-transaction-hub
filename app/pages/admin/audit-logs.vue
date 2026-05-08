@@ -3,7 +3,7 @@ import type { AuditLogDto } from '~/types/api'
 
 definePageMeta({ middleware: ['auth', 'role'], roles: ['Administrator'] })
 
-const { $api } = useNuxtApp()
+const api = useApi()
 const { fromNow } = useRelativeTime()
 
 const logs = ref<AuditLogDto[]>([])
@@ -18,7 +18,7 @@ const playerIdFilter = ref('')
 async function load(p = 1) {
   loading.value = true
   try {
-    const result = await ($api as ReturnType<typeof $fetch.create>)<{
+    const result = await api<{
       items: AuditLogDto[]
       totalPages: number
       totalCount: number
