@@ -40,7 +40,7 @@ onMounted(load)
     </div>
     <div v-else-if="summary" class="grid grid-cols-2 lg:grid-cols-4 gap-4">
       <CommonAppStatCard label="Flagged Transactions" :value="summary.totalFlaggedTransactions" />
-      <CommonAppStatCard label="Pending Review" :value="summary.pendingReview" />
+      <CommonAppStatCard label="Pending Review" :value="summary.pendingReviewCount" />
       <CommonAppStatCard label="Flagged Players" :value="summary.flaggedPlayersCount" />
       <CommonAppStatCard label="Total Flagged Amount" :value="formatUSD(summary.totalFlaggedAmount)" />
     </div>

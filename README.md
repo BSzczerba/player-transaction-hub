@@ -24,7 +24,7 @@ A full-featured gaming platform operations dashboard built as a portfolio projec
 | Form validation | vee-validate + zod v4 |
 | Charts | Chart.js 4 + vue-chartjs 5 |
 | HTTP client | ofetch (`$fetch`) via Nuxt plugin |
-| Auth | JWT + refresh token in localStorage |
+| Auth | JWT access token in localStorage; refresh token in memory only (XSS mitigation) |
 
 ## Prerequisites
 
@@ -101,4 +101,29 @@ app/
 
 ## Screenshots
 
-_Add screenshots after deployment._
+![Login](screenshots/login.png)
+*Login page with one-click dev login banner for each role*
+
+![Player Dashboard](screenshots/player-dashboard.png)
+*Player dashboard — balance overview, recent transactions, quick deposit/withdraw actions*
+
+![Operator Queue](screenshots/operator-queue.png)
+*Operator approval queue — review pending transactions, approve or reject with notes*
+
+![Compliance Risk Profile](screenshots/compliance-risk.png)
+*Compliance risk profile — AML score, velocity and volume indicators per player*
+
+![Compliance Risk Profile — Flagged Transactions](screenshots/compliance-risk1.png)
+*Compliance risk profile (cont.) — flagged transaction history with one-click flag clearing*
+
+![Admin Players](screenshots/admin-players.png)
+*Admin player management — status controls, KYC verification, limits, and role assignment*
+
+![Reports — Financial Summary](screenshots/reports.png)
+*Reports — financial summary with line chart, date range selector, and key metrics*
+
+![Reports — Payment Methods](screenshots/reports1.png)
+*Reports — payment method breakdown: bar chart by volume/count and detailed stats table*
+
+![Transaction Filters](screenshots/transactions-filters.png)
+*Transaction list with advanced filtering (status, type, date range, amount) and sortable columns*

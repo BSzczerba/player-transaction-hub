@@ -9,10 +9,14 @@ const { formatUSD, monoClass } = useCurrency()
 const { fromNow } = useRelativeTime()
 const router = useRouter()
 
+const BACKEND_SORT_FIELDS = new Set(['createdAt', 'amount', 'status', 'type'])
+
 const loading = ref(true)
 const loadError = ref('')
 const sortBy = ref('createdAt')
 const sortDir = ref<'asc' | 'desc'>('desc')
+const apiSortBy = ref('createdAt')
+const apiSortDir = ref<'asc' | 'desc'>('desc')
 const activeFilters = ref<TransactionFilterDto>({})
 
 const isPlayer = computed(() => auth.user?.role === 'Player')
@@ -22,7 +26,7 @@ const columns = [
   { key: 'type', label: 'Type', width: '110px', sortable: true },
   { key: 'amount', label: 'Amount', width: '130px', sortable: true },
   { key: 'status', label: 'Status', width: '130px', sortable: true },
-  { key: 'paymentMethodName', label: 'Method' },
+  { key: 'paymentMethodName', label: 'Method', sortable: true },
   { key: 'paymentGatewayReference', label: 'Gateway Ref', width: '160px' },
   { key: 'isFlagged', label: 'Flag', width: '60px' },
 ]
@@ -32,9 +36,9 @@ async function load(page = 1) {
   loadError.value = ''
   try {
     if (isPlayer.value) {
-      await txStore.fetchMy(page, 20, sortBy.value, sortDir.value, activeFilters.value)
+      await txStore.fetchMy(page, 20, apiSortBy.value, apiSortDir.value, activeFilters.value)
     } else {
-      await txStore.fetchAll({ ...activeFilters.value, page, pageSize: 20, sortBy: sortBy.value, sortDir: sortDir.value })
+      await txStore.fetchAll({ ...activeFilters.value, page, pageSize: 20, sortBy: apiSortBy.value, sortDir: apiSortDir.value })
     }
   } catch {
     loadError.value = 'Failed to load transactions.'
@@ -46,7 +50,11 @@ async function load(page = 1) {
 function handleSortChange({ sortBy: by, sortDir: dir }: { sortBy: string; sortDir: 'asc' | 'desc' }) {
   sortBy.value = by
   sortDir.value = dir
-  load(1)
+  if (BACKEND_SORT_FIELDS.has(by)) {
+    apiSortBy.value = by
+    apiSortDir.value = dir
+    load(1)
+  }
 }
 
 function handleFilterChange(filters: TransactionFilterDto) {
@@ -60,11 +68,22 @@ function goToDetail(row: Record<string, unknown>) {
   navigateTo(`/transactions/${row.id}`)
 }
 
-const rows = computed(() =>
+const baseRows = computed(() =>
   isPlayer.value
     ? (txStore.myTransactions?.items ?? [])
     : (txStore.allTransactions?.items ?? [])
 )
+
+const rows = computed(() => {
+  if (BACKEND_SORT_FIELDS.has(sortBy.value)) return baseRows.value
+  const key = sortBy.value as keyof TransactionDto
+  return [...baseRows.value].sort((a, b) => {
+    const aVal = (a[key] ?? '') as string
+    const bVal = (b[key] ?? '') as string
+    const cmp = aVal.localeCompare(bVal)
+    return sortDir.value === 'asc' ? cmp : -cmp
+  })
+})
 
 const pagination = computed(() =>
   isPlayer.value ? txStore.myTransactions : txStore.allTransactions

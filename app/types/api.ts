@@ -154,9 +154,25 @@ export interface UpdatePlayerDto {
 
 export interface ComplianceSummaryDto {
   totalFlaggedTransactions: number
-  pendingReview: number
+  pendingReviewCount: number
   flaggedPlayersCount: number
   totalFlaggedAmount: number
+  topFlaggedPlayers?: Array<{
+    playerId: string
+    username: string
+    flaggedTransactionCount: number
+    totalFlaggedAmount: number
+    latestFlagReason: string
+  }>
+}
+
+export interface AmlScoreBreakdown {
+  kycPoints: number
+  flagRatioPoints: number
+  velocity24hPoints: number
+  velocity7dPoints: number
+  highValuePoints: number
+  dailyVolumePoints: number
 }
 
 export interface RiskProfileDto {
@@ -170,6 +186,13 @@ export interface RiskProfileDto {
   totalWithdrawn: number
   currentBalance: number
   accountCreated: string
+  amlScore: number
+  riskLevel: 'Low' | 'Medium' | 'High' | 'Critical'
+  scoreBreakdown: AmlScoreBreakdown
+  transactions24h: number
+  transactions7d: number
+  maxSingleTransactionAmount: number
+  todayVolume: number
   recentFlaggedTransactions: TransactionDto[]
 }
 
